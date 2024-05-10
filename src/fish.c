@@ -98,20 +98,14 @@ int main() {
         if(debug) print_debug_line(&li);
 
         size_t number_of_cmds = li.n_cmds;
-        struct piped piped;
+        struct pipe_control pc;
+        init_pipe_control(&pc);
 
-        // Exécute chaque commande détectée avec ses arguments
-        for (size_t i = 0; i < number_of_cmds; i++) {
-            if (li.cmds[i].n_args > 0) {
-                piped_reset(&piped);
-                piped.next       =    (i < number_of_cmds - 1 ? &(li.cmds[i+1]) : NULL);
-                piped.previous   =    (i > 0 ? &(li.cmds[i-1]) : NULL);
-                piped.is_piped   =    (number_of_cmds > 1);
+        for (size_t i = 0; i < number_of_cmds; i++)
+            if (li.cmds[i].n_args > 0)
+                execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &pc, i);
 
-                execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &piped);
-                piped_reset(&piped);
-            }
-        }
+        close_pipe(pc.pipe_prev);
 
         line_reset(&li);
     }
@@ -119,7 +113,7 @@ int main() {
 
 
 /**
- * \fn void execute_command_with_args(char *cmd, char *args[], struct sigaction *standard_sigint_action, struct line *li)
+ * \fn void execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line)
  * \brief Execute a command with its arguments.
  *
  * This function executes the command given in argument with its arguments.
@@ -128,54 +122,57 @@ int main() {
  *
  * \param cmd The command to execute.
  * \param args The arguments of the command.
- * \param standard_sigint_action The action to execute when the SIGINT signal is received.
- * \param li The line structure of the command executed.
- * \param piped The piped structure of the command executed.
+ * \param standardSigintAction The action to execute when the SIGINT signal is received.
+ * \param line The line structure of the command executed.
+ * \param pipeControl The pipe control structure.
+ * \param cmd_index The index of the command in the line structure.
  */
 void execute_command_with_args(
             char *cmd,
             char *args[],
-            struct sigaction *standard_sigint_action,
-            struct line *li,
-            struct piped *piped
+            struct sigaction *standardSigintAction,
+            struct line *line,
+            struct pipe_control *pipeControl,
+            size_t cmd_index
         ) {
 
-    if(debug) {
-        fprintf(stderr, "\n\n\tCommand: %s\n", cmd);
-        if(piped->next != NULL) {
-            fprintf(stderr, "\t\tPiped next: %s\n", piped->next->args[0]);
-        }
-        if(piped->previous != NULL) {
-            fprintf(stderr, "\t\tPiped previous: %s\n", piped->previous->args[0]);
-        }
-        fprintf(stderr, "\t\tPiped: %s\n", YES_NO(piped->is_piped));
-    }
+    if (manage_intern_cmd(cmd, args, line)) return;
+
+    bool is_pipe_needed = cmd_index < line->n_cmds - 1;
+    if (is_pipe_needed && pipe(pipeControl->pipe_next) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
 
 
-    if (manage_intern_cmd(cmd, args, li)) return;
-
-    bool background = li->background;
+    bool background = line->background;
 
     if(!background) { // If the command is not executed in background, the SIGINT signal is 'un-ignored'. The previous action was ignore and its action is saved in ign_sa
-        if(sigaction(SIGINT, standard_sigint_action, NULL) == -1) {
+        if(sigaction(SIGINT, standardSigintAction, NULL) == -1) {
             perror("sigaction background");
             exit(EXIT_FAILURE);
         }
     }
     pid_t pid = fork();
 
-    if(debug) fprintf(stderr, "\tpid created %d\n", pid);
+    if(debug && pid != 0) fprintf(stderr, "\tpid created %d\n", pid);
 
     if (pid == 0) { // Child process
-        char *file_input = li->file_input;
+        char *file_input = line->file_input;
 
         if(background && file_input == NULL) {
             file_input = "/dev/null";
         }
 
-        manage_file_input(file_input);
+        if (pipeControl->pipe_prev[PREAD] != -1) {
+            if(dup2(pipeControl->pipe_prev[PREAD], STDIN_FILENO) == -1) { perror("dup2 pipe_prev"); exit(EXIT_FAILURE); }
+            close_pipe(pipeControl->pipe_prev);
+        }
 
-        manage_file_output(li->file_output, li->file_output_append);
+        if (is_pipe_needed) {
+            if(dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO) == -1) { perror("dup2 pipe_next"); exit(EXIT_FAILURE); }
+            close_pipe(pipeControl->pipe_next);
+        }
+
+        manage_file_input(file_input);
+        manage_file_output(line->file_output, line->file_output_append);
 
         // Execute the command with its arguments
         if (execvp(cmd, args) == -1) {
@@ -195,6 +192,13 @@ void execute_command_with_args(
         exit(EXIT_FAILURE);
     } else { // Parent process
         apply_ignore(SIGINT, NULL);
+
+        close_pipe(pipeControl->pipe_prev);
+        pipeControl->pipe_prev[PREAD] = pipeControl->pipe_next[PREAD];
+        pipeControl->pipe_prev[PWRITE] = pipeControl->pipe_next[PWRITE];
+        close_pipe(pipeControl->pipe_next);
+        pipeControl->pipe_next[PREAD] = -1;
+        pipeControl->pipe_next[PWRITE] = -1;
 
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
@@ -356,9 +360,10 @@ struct sigaction manage_sigaction() {
 
 /**
  * \fn void apply_ignore(int signal, struct sigaction *old_sigaction)
- * \TODO doc
- * \param signal
- * \param old_sigaction
+ * \brief Apply the ignore action for a signal.
+ *
+ * \param signal the signal to ignore
+ * \param old_sigaction the previous action for the signal
  */
 void apply_ignore(int signal, struct sigaction *old_sigaction) {
     struct sigaction sa_ignore;
