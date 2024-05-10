@@ -10,6 +10,17 @@
 #include <stdbool.h>
 #include "cmdline.h"
 
+/**
+ * \def PREAD
+ * \brief Index of the read end of the pipe.
+ */
+#define PREAD 0
+/**
+ * \def PWRITE
+ * \brief Index of the write end of the pipe.
+ */
+#define PWRITE 1
+
 /*!
  * \def YES_NO(i)
  * \brief Macro to convert a boolean value to a string.
