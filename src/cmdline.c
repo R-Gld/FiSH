@@ -138,14 +138,6 @@ static int line_next_word(const char *str, size_t *index, char **pword) {
 }
 
 
-/**
- * \fn int line_parse(struct line *li, const char *str)
- * \brief Parse the string "str" and construct the struct line pointed by "li"
- *
- * \param li the struct line to fill
- * \param str the string to parse
- * \return 0 on success, -1 on failure
- */
 int line_parse(struct line *li, const char *str) {
   assert(li);
   assert(str);

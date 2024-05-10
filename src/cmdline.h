@@ -14,9 +14,14 @@
 
 /**
  * \def MAX_ARGS
- * \brief The maximum of
+ * \brief The maximum of arguments for a single command.
  */
 #define MAX_ARGS 16
+
+/**
+ * \def MAX_CMDS
+ * \brief The maximum of commands for a single command line.
+ */
 #define MAX_CMDS 16
 
 /**
