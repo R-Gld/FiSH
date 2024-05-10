@@ -4,6 +4,13 @@
  * \author Romain GALLAND
  * \version 1
  */
+/**
+ * \def _DEFAULT_GNU
+ * \brief Define to enable the use of some GNU extensions.
+ *
+ * Used for the function asprintf.
+ */
+#define _GNU_SOURCE
 
 #include "utils.h"
 
@@ -29,7 +36,10 @@ void manage_file_input(char *file_input) {
     if(file_input == NULL) return;
     int fd_in = open(file_input, O_RDONLY);
     if(fd_in < 0) {
-        perror("open input file");
+        char *msg;
+        asprintf(&msg, "open input file '%s'", file_input);
+        perror(msg);
+        free(msg);
         exit(EXIT_FAILURE);
     }
     dup2(fd_in, STDIN_FILENO);
@@ -42,7 +52,10 @@ void manage_file_output(char *file_output, bool file_output_append) {
     flags |= (file_output_append ? O_APPEND : O_TRUNC);
     int fd_out = open(file_output, flags, 0644);
     if (fd_out < 0) {
-        perror("open output file");
+        char *msg;
+        asprintf(&msg, "open output file '%s'", file_output);
+        perror(msg);
+        free(msg);
         exit(EXIT_FAILURE);
     }
     dup2(fd_out, STDOUT_FILENO);
