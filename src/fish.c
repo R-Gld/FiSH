@@ -161,32 +161,15 @@ void execute_command_with_args(
 
     if (pid == 0) { // Child process
         char *file_input = li->file_input;
-        char *file_output = li->file_output;
 
         if(background && file_input == NULL) {
             file_input = "/dev/null";
         }
 
-        if(file_input != NULL) {
-            int fd_in = open(file_input, O_RDONLY);
-            if(fd_in < 0) {
-                perror("open input file");
-                exit(EXIT_FAILURE);
-            }
-            dup2(fd_in, STDIN_FILENO);
-            close(fd_in);
-        }
-        if(file_output != NULL) {
-            int flags = O_WRONLY | O_CREAT;
-            flags |= (li->file_output_append ? O_APPEND : O_TRUNC);
-            int fd_out = open(file_output, flags, 0644);
-            if (fd_out < 0) {
-                perror("open output file");
-                exit(EXIT_FAILURE);
-            }
-            dup2(fd_out, STDOUT_FILENO);
-            close(fd_out);
-        }
+        manage_file_input(file_input);
+
+        manage_file_output(li->file_output, li->file_output_append);
+
         // Execute the command with its arguments
         if (execvp(cmd, args) == -1) {
             if(errno == ENOENT) {
