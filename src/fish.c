@@ -26,10 +26,8 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <pwd.h>
 
-#include <assert.h>
 
 #include "fish.h"
 #include "cmdline.h"
