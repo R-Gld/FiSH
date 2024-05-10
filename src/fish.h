@@ -16,24 +16,6 @@
 
 #include <stdbool.h>
 
-/**
- * \struct piped
- * \brief Structure helping manage piped commands.
- */
-struct piped {
-    struct cmd *previous; /*!< Pointer to the previous command. */
-    struct cmd *next;     /*!< Pointer to the next command. */
-    bool is_piped;        /*!< Flag indicating if the command is piped. */
-};
-
-/**
- * \fn piped_reset(struct piped *pip)
- * \brief Reset the structure to its initial state.
- * This function resets the structure to its initial state, by setting the pointers to NULL and the flag to false.
- * \param pip Pointer to the structure to reset.
- */
-void piped_reset(struct piped *pip);
-
 /*!
  * \def BUFLEN
  * \brief Maximum length of the command line.
@@ -72,12 +54,7 @@ void piped_reset(struct piped *pip);
  */
 #define GRAY "\x1B[90m"
 
-/*!
- * \def YES_NO(i)
- * \brief Macro to convert a boolean value to a string.
- * This macro converts a boolean value to a string "Y" if the value is true, and "N" if the value is false.
- */
-#define YES_NO(i) ((i) ? "Y" : "N")
+
 
 /* All the docs are described in the file fish.c */
 
@@ -85,7 +62,6 @@ void execute_command_with_args(char *cmd, char *args[], struct sigaction *standa
 bool manage_intern_cmd(char *cmd, char *args[], struct line *li);
 void cd(char *path);
 void substitute_home(char *path, char *home);
-void print_debug_line(struct line *li);
 void sigchld_handler(int signum);
 struct sigaction manage_sigaction();
 

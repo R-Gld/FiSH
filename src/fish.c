@@ -288,80 +288,6 @@ void cd(char *path) {
 }
 
 /**
- * \fn void substitute_home(char *path, char *home)
- * \brief Replace the home directory in the path by '~'.
- *
- * \param path The path to modify.
- * \param home The home directory. If NULL, the HOME environment variable is used.
- */
-void substitute_home(char *path, char *home) {
-    if(home == NULL || home[0] == '\0') {
-        home = getenv("HOME");
-    }
-    if (home == NULL) {
-        return;
-    }
-    if (strncmp(path, home, strlen(home)) == 0) {
-        char *new_path = malloc(strlen(path) + 1);
-        if (new_path == NULL) {
-            perror("malloc");
-            return;
-        }
-        new_path[0] = '~';
-        strcpy(new_path + 1, path + strlen(home));
-        strcpy(path, new_path);
-        free(new_path);
-    }
-}
-
-
-/**
- * \fn void print_debug_line(struct line *li)
- * \brief Print the content of a line structure for debug purposes.
- *
- * Prints the following information:<br>
- * - Number of commands<br>
- * - For each command:<br>
- *  - Number of arguments<br>
- *  - Arguments<br>
- * - Redirection of input<br>
- *  - Filename for input redirection if any<br>
- * - Redirection of output<br>
- *  - Filename for output redirection if any<br>
- *  - Mode of output redirection (APPEND or TRUNC)<br>
- * - Background execution<br>
- *
- * \param li The line structure to print.
- */
-void print_debug_line(struct line *li) {
-    fprintf(stderr, "Command line:\n");
-    fprintf(stderr, "\tNumber of commands: %zu\n", li->n_cmds);
-
-    for (size_t i = 0; i < li->n_cmds; ++i) {
-        fprintf(stderr, "\t\tCommand #%zu:\n", i);
-        fprintf(stderr, "\t\t\tNumber of args: %zu\n", li->cmds[i].n_args);
-        fprintf(stderr, "\t\t\tArgs:");
-        for (size_t j = 0; j < li->cmds[i].n_args; ++j) {
-            fprintf(stderr, " \"%s\"", li->cmds[i].args[j]);
-        }
-        fprintf(stderr, "\n");
-    }
-
-    fprintf(stderr, "\tRedirection of input: %s\n", YES_NO(li->file_input));
-    if (li->file_input) {
-        fprintf(stderr, "\t\tFilename: '%s'\n", li->file_input);
-    }
-
-    fprintf(stderr, "\tRedirection of output: %s\n", YES_NO(li->file_output));
-    if (li->file_output) {
-        fprintf(stderr, "\t\tFilename: '%s'\n", li->file_output);
-        fprintf(stderr, "\t\tMode: %s\n", li->file_output_append ? "APPEND" : "TRUNC");
-    }
-
-    fprintf(stderr, "\tBackground: %s\n", YES_NO(li->background));
-}
-
-/**
  * \fn void sigchld_handler(int signum)
  * \brief Handler for the SIGCHLD signal.
  * This handler is called when a child process terminates.
@@ -421,11 +347,4 @@ struct sigaction manage_sigaction() {
     sa_SIGCHILD.sa_handler = sigchld_handler;
     if(sigaction(SIGCHLD, &sa_SIGCHILD, NULL) == -1) { perror("sigaction"); exit(EXIT_FAILURE); }
     return sa_standard_SIGINT;
-}
-
-void piped_reset(struct piped *pip) {
-    assert(pip);
-    pip->next = NULL;
-    pip->previous = NULL;
-    pip->is_piped = false;
 }
