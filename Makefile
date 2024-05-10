@@ -49,7 +49,7 @@ dirs:
 # Use doxygen (cf. https://www.doxygen.nl/) to generate documentation
 full-docs: docs docs-pdf
 
-docs:
+docs: check-doxygen
 	@doxygen $(DOC_DIR)/Doxyfile > /dev/null # Generate HTML / LaTeX and Man pages documentations.
 
 open-docs: docs
@@ -63,8 +63,11 @@ open-pdf: docs-pdf
 
 # --- Special Targets --- #
 
+check-doxygen:
+	@dpkg -s doxygen > /dev/null 2&>1 || (echo "Doxygen is not installed. Please install it using 'sudo apt-get install doxygen'." && exit 1)
+
 run: install
 	$(EXEC_DIR)/fish
 
-.PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf
+.PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf check-doxygen run install
 # .PHONY => tells make that these targets do not produce files
