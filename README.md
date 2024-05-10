@@ -37,5 +37,5 @@ After, you can just execute `fish` from anywhere.
 
 ## Authors
 
- - [Romain GALLAND](https://github.com/R-Gld): Me, the one who did the project.
- - [Eric MERLET](): My teacher, the one who wrote the start of the project.
+ - **[Romain GALLAND](https://github.com/R-Gld)**: Me, the one who did the project.
+ - **Eric MERLET**: My teacher, the one who wrote the start of the project.
