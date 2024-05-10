@@ -61,5 +61,8 @@ open-pdf: docs-pdf
 
 # --- Special Targets --- #
 
+run: install
+	$(EXEC_DIR)/fish
+
 .PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf
 # .PHONY => tells make that these targets do not produce files
