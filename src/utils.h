@@ -19,23 +19,25 @@
 
 
 /**
- * \struct piped
- * \brief Structure helping manage piped commands.
+ * \struct pipe_control
+ * \brief Structure helping manage pipes.
  */
-struct piped {
-    struct cmd *previous; /*!< Pointer to the previous command. */
-    struct cmd *next;     /*!< Pointer to the next command. */
-    bool is_piped;        /*!< Flag indicating if the command is piped. */
+struct pipe_control {
+    int pipe_prev[2]; /*!< File descriptors for the previous pipe. */
+    int pipe_next[2]; /*!< File descriptors for the next pipe. */
 };
 
 /**
- * \fn piped_reset(struct piped *pip)
- * \brief Reset the structure to its initial state.
- * This function resets the structure to its initial state, by setting the pointers to NULL and the flag to false.
- * \param pip Pointer to the structure to reset.
+ * \fn void init_pipe_control(struct pipe_control *pc)
+ * \param pc The pipe_control structure to initialize.
  */
-void piped_reset(struct piped *pip);
+void init_pipe_control(struct pipe_control *pc);
 
+/**
+ * \fn void close_pipe(int pipe[2])
+ * \param pipe The pipe to close.
+ */
+void close_pipe(int pipe[2]);
 
 /**
  * \fn void manage_file_input(char *file_input)

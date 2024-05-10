@@ -24,12 +24,18 @@
 #include <string.h>
 
 
-void piped_reset(struct piped *pip) {
-    assert(pip);
-    pip->next = NULL;
-    pip->previous = NULL;
-    pip->is_piped = false;
+void init_pipe_control(struct pipe_control *pc) {
+    pc->pipe_prev[PREAD] = -1;
+    pc->pipe_prev[PWRITE] = -1;
+    pc->pipe_next[PREAD] = -1;
+    pc->pipe_next[PWRITE] = -1;
 }
+
+void close_pipe(int pipe[2]) {
+    if (pipe[PREAD] != -1 && close(pipe[PREAD]) == -1) { perror("close pipe[READ]"); exit(EXIT_FAILURE); }
+    if (pipe[PWRITE] != -1 && close(pipe[PWRITE]) == -1) { perror("close pipe[WRITE]"); exit(EXIT_FAILURE); }
+}
+
 
 void manage_file_input(char *file_input) {
     if(file_input == NULL) return;
