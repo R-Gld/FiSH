@@ -42,8 +42,8 @@ void manage_file_input(char *file_input) {
         free(msg);
         exit(EXIT_FAILURE);
     }
-    dup2(fd_in, STDIN_FILENO);
-    close(fd_in);
+    if(dup2(fd_in, STDIN_FILENO) == -1) { perror("dup2 fd_in"); exit(EXIT_FAILURE); }
+    if(close(fd_in) == -1) { perror("close fd_in"); exit(EXIT_FAILURE); }
 }
 
 void manage_file_output(char *file_output, bool file_output_append) {
@@ -58,8 +58,8 @@ void manage_file_output(char *file_output, bool file_output_append) {
         free(msg);
         exit(EXIT_FAILURE);
     }
-    dup2(fd_out, STDOUT_FILENO);
-    close(fd_out);
+    if(dup2(fd_out, STDOUT_FILENO) == -1) { perror("dup2 fd_out"); exit(EXIT_FAILURE); }
+    if(close(fd_out) == -1) { perror("close fd_out"); exit(EXIT_FAILURE); }
 }
 
 
