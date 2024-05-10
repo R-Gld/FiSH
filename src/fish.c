@@ -18,6 +18,14 @@
  */
 #define _DEFAULT_SOURCE
 
+/**
+ * \def _DEFAULT_GNU
+ * \brief Define to enable the use of some GNU extensions.
+ *
+ * Used for the function asprintf.
+ */
+#define _DEFAULT_GNU
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -174,7 +182,10 @@ void execute_command_with_args(
             if(errno == ENOENT) {
                 fprintf(stderr, "%s: Command not found\n", cmd);
             } else {
-                perror("execvp");
+                char *msg;
+                asprintf(&msg, "execvp of command '%s'", cmd);
+                perror(msg);
+                free(msg);
             }
             exit(102);
         }
