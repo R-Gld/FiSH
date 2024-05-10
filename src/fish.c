@@ -91,14 +91,16 @@ int main() {
 
         if(debug) print_debug_line(&li);
 
+        size_t number_of_cmds = li.n_cmds;
+        struct piped piped;
+
         // Exécute chaque commande détectée avec ses arguments
-        for (size_t i = 0; i < li.n_cmds; i++) {
+        for (size_t i = 0; i < number_of_cmds; i++) {
             if (li.cmds[i].n_args > 0) {
-                struct piped piped;
                 piped_reset(&piped);
-                piped.next = (i < li.n_cmds - 1 ? &(li.cmds[i+1]) : NULL);
-                piped.previous = (i > 0 ? &(li.cmds[i-1]) : NULL);
-                piped.is_piped = (piped.next != NULL || piped.previous != NULL);
+                piped.next       =    (i < number_of_cmds - 1 ? &(li.cmds[i+1]) : NULL);
+                piped.previous   =    (i > 0 ? &(li.cmds[i-1]) : NULL);
+                piped.is_piped   =    (number_of_cmds > 1);
 
                 execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &piped);
                 piped_reset(&piped);
