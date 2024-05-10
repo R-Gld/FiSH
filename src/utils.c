@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <assert.h>
 
 
 void piped_reset(struct piped *pip) {

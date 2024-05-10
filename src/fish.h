@@ -11,6 +11,7 @@
 #define FISH_FISH_H
 
 #include "cmdline.h"
+#include "utils.h"
 
 #include <signal.h>
 
