@@ -1,7 +1,9 @@
-//
-// Created by rgld_ on 10/05/24.
-//
-
+/**
+ * \file utils.h
+ * \brief Header file for utility functions.
+ * \author Romain GALLAND
+ * \version 1
+ */
 #ifndef FISH_UTILS_H
 #define FISH_UTILS_H
 

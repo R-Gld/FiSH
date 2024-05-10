@@ -1,3 +1,10 @@
+/**
+ * \file utils.c
+ * \brief Implementation of utility functions.
+ * \author Romain GALLAND
+ * \version 1
+ */
+
 #include "utils.h"
 
 #include "cmdline.h"
