@@ -47,6 +47,8 @@ dirs:
 
 # --- Documentation --- #
 # Use doxygen (cf. https://www.doxygen.nl/) to generate documentation
+full-docs: docs docs-pdf
+
 docs:
 	@doxygen $(DOC_DIR)/Doxyfile > /dev/null # Generate HTML / LaTeX and Man pages documentations.
 
