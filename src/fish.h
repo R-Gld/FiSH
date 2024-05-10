@@ -65,5 +65,6 @@ void cd(char *path);
 void substitute_home(char *path, char *home);
 void sigchld_handler(int signum);
 struct sigaction manage_sigaction();
+void apply_ignore(int signal, struct sigaction *old_sigaction);
 
 #endif //FISH_FISH_H

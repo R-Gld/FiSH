@@ -146,11 +146,10 @@ void execute_command_with_args(
 
     if (manage_intern_cmd(cmd, args, li)) return;
 
-    struct sigaction ign_sa;
     bool background = li->background;
 
     if(!background) { // If the command is not executed in background, the SIGINT signal is 'un-ignored'. The previous action was ignore and its action is saved in ign_sa
-        if(sigaction(SIGINT, standard_sigint_action, &ign_sa) == -1) {
+        if(sigaction(SIGINT, standard_sigint_action, NULL) == -1) {
             perror("sigaction background");
             exit(EXIT_FAILURE);
         }
@@ -184,7 +183,7 @@ void execute_command_with_args(
         perror("fork");
         exit(EXIT_FAILURE);
     } else { // Parent process
-        sigaction(SIGINT, &ign_sa, NULL);
+        apply_ignore(SIGINT, NULL);
 
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
@@ -333,13 +332,8 @@ void sigchld_handler(int signum) {
  * \return The previous action for the SIGINT signal.
  */
 struct sigaction manage_sigaction() {
-    struct sigaction sa_ignore;
     struct sigaction sa_standard_SIGINT;
-
-    sigemptyset(&sa_ignore.sa_mask);
-    sa_ignore.sa_flags = SA_RESTART;
-    sa_ignore.sa_handler = SIG_IGN;
-    if(sigaction(SIGINT, &sa_ignore, &sa_standard_SIGINT) == -1) { perror("sigaction"); exit(EXIT_FAILURE); }
+    apply_ignore(SIGINT, &sa_standard_SIGINT);
 
     struct sigaction sa_SIGCHILD;
     sigemptyset(&sa_SIGCHILD.sa_mask);
@@ -347,4 +341,18 @@ struct sigaction manage_sigaction() {
     sa_SIGCHILD.sa_handler = sigchld_handler;
     if(sigaction(SIGCHLD, &sa_SIGCHILD, NULL) == -1) { perror("sigaction"); exit(EXIT_FAILURE); }
     return sa_standard_SIGINT;
+}
+
+/**
+ * \fn void apply_ignore(int signal, struct sigaction *old_sigaction)
+ * \TODO doc
+ * \param signal
+ * \param old_sigaction
+ */
+void apply_ignore(int signal, struct sigaction *old_sigaction) {
+    struct sigaction sa_ignore;
+    sigemptyset(&sa_ignore.sa_mask);
+    sa_ignore.sa_flags = SA_RESTART;
+    sa_ignore.sa_handler = SIG_IGN;
+    if(sigaction(signal, &sa_ignore, old_sigaction) == -1) { perror("sigaction"); exit(EXIT_FAILURE); }
 }
