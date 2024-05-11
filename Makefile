@@ -15,7 +15,7 @@ EXECS 				= $(EXEC_DIR)/fish $(EXEC_DIR)/cmdline_test
 SOURCES 			= $(SRC_DIR)/cmdline.c $(SRC_DIR)/fish.c $(SRC_DIR)/cmdline_test.c $(SRC_DIR)/utils.c
 OBJECTS 			= $(OBJ_DIR)/cmdline.o $(OBJ_DIR)/fish.o $(OBJ_DIR)/cmdline_test.o $(OBJ_DIR)/utils.o
 
-all: dirs libs $(EXECS) full-docs
+all: install
 
 install: dirs libs $(EXECS)
 
