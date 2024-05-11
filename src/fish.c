@@ -201,13 +201,14 @@ void execute_command_with_args(
         }
 
         if (pipeControl->pipe_prev[PREAD] != -1) {
-            if(dup2(pipeControl->pipe_prev[PREAD], STDIN_FILENO) == -1) { perror("dup2 pipe_prev"); exit(EXIT_FAILURE); }
-            close_pipe(pipeControl->pipe_prev);
+            if(dup2(pipeControl->pipe_prev[PREAD], STDIN_FILENO) == -1) { perror("dup2 pipe_prev[READ] to STDIN"); exit(EXIT_FAILURE); }
+            if(close(pipeControl->pipe_prev[PREAD]) == -1) { perror("close pipe_prev[READ]"); exit(EXIT_FAILURE); }
         }
 
         if (is_pipe_needed) {
-            if(dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO) == -1) { perror("dup2 pipe_next"); exit(EXIT_FAILURE); }
-            close_pipe(pipeControl->pipe_next);
+            if(close(pipeControl->pipe_next[PREAD]) == -1) { perror("close pipe_next[READ]"); exit(EXIT_FAILURE); }
+            if(dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO) == -1) { perror("dup2 pipe_next[WRITE] to stdout"); exit(EXIT_FAILURE); }
+            if(close(pipeControl->pipe_next[PWRITE]) == -1) { perror("close pipe_next[WRITE]"); exit(EXIT_FAILURE); }
         }
 
         manage_file_input(file_input);
@@ -232,13 +233,19 @@ void execute_command_with_args(
     } else { // Parent process
         apply_ignore(SIGINT, NULL);
 
-        close_pipe(pipeControl->pipe_prev);
+        if (pipeControl->pipe_prev[PREAD] != -1) {
+            close(pipeControl->pipe_prev[PREAD]); // Always close previous read end in parent
+        }
+
+        if (is_pipe_needed) {
+            close(pipeControl->pipe_next[PWRITE]); // Close next write end in parent after forking
+        }
+
+        // Move pipe_next to pipe_prev for the next command
         pipeControl->pipe_prev[PREAD] = pipeControl->pipe_next[PREAD];
         pipeControl->pipe_prev[PWRITE] = pipeControl->pipe_next[PWRITE];
-        close_pipe(pipeControl->pipe_next);
         pipeControl->pipe_next[PREAD] = -1;
         pipeControl->pipe_next[PWRITE] = -1;
-
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
             *exit_code = -1;
