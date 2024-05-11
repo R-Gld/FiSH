@@ -87,7 +87,7 @@ int main() {
         if(current_dir == NULL) { perror("getcwd (current_dir)"); exit(EXIT_FAILURE); }
         substitute_home(current_dir, home);
 
-        char *exit_color = GREEN;
+        char *exit_color;
 
         switch(last_status_code) {
             case 0:
