@@ -71,6 +71,9 @@ int main() {
     char buf[BUFLEN];
     line_init(&li);
 
+
+    int last_status_code = 0;
+
     struct sigaction sa_standard_SIGINT = manage_sigaction();
 
     struct passwd *user_data = getpwuid(getuid());
@@ -84,7 +87,28 @@ int main() {
         if(current_dir == NULL) { perror("getcwd (current_dir)"); exit(EXIT_FAILURE); }
         substitute_home(current_dir, home);
 
-        printf(YELLOW "FiSH " GRAY "➔" GREEN " %s " GRAY "➔" BLUE " %s" RESET "\n\t➔ ", username, current_dir);
+        char *exit_color = GREEN;
+
+        switch(last_status_code) {
+            case 0:
+            case -3:
+                exit_color = GREEN;
+                break;
+            case -1:
+                exit_color = GRAY;
+                break;
+            case 127:
+            case -2:
+            default:
+                exit_color = RED;
+                break;
+        }
+
+        if(last_status_code > 256) {
+            asprintf(&exit_color, RED "(" YELLOW "%d" RED ") ", last_status_code - 256);
+        }
+
+        printf(YELLOW "FiSH " GRAY "➔" GREEN " %s " GRAY "➔" BLUE " %s" RESET "\n\t%s■ " RESET "➔ ", username, current_dir, exit_color);
         free(current_dir);
         fgets(buf, BUFLEN, stdin);
 
@@ -102,8 +126,10 @@ int main() {
         init_pipe_control(&pc);
 
         for (size_t i = 0; i < number_of_cmds; i++)
-            if (li.cmds[i].n_args > 0)
-                execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &pc, i);
+            if (li.cmds[i].n_args > 0){
+                execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &pc, i, &last_status_code);
+
+            }
 
         close_pipe(pc.pipe_prev);
 
@@ -126,6 +152,15 @@ int main() {
  * \param line The line structure of the command executed.
  * \param pipeControl The pipe control structure.
  * \param cmd_index The index of the command in the line structure.
+ *
+ * \param exit_code The exit code of the command.<br>
+ *                  If the command is an internal command, the exit code is set to -3.<br>
+ *                  If the command is not found, the exit code is set to 127.<br>
+ *                  If the command is killed, the exit code is set to 256 + the signal number.<br>
+ *                  Otherwise, the exit code is set to the status of the command. (0 if the command is successful, another value otherwise)<br>
+ *                  The exit code is stored in the variable pointed by this parameter.<br>
+ *                  If the command is executed in background, the exit code is set to -1<br>
+ *                  By default, if any of theses cases does not occur, the exit code is set to -2.
  */
 void execute_command_with_args(
             char *cmd,
@@ -133,10 +168,14 @@ void execute_command_with_args(
             struct sigaction *standardSigintAction,
             struct line *line,
             struct pipe_control *pipeControl,
-            size_t cmd_index
+            size_t cmd_index,
+            int *exit_code
         ) {
 
-    if (manage_intern_cmd(cmd, args, line)) return;
+    if (manage_intern_cmd(cmd, args, line)){
+        *exit_code = -3;
+        return;
+    }
 
     bool is_pipe_needed = cmd_index < line->n_cmds - 1;
     if (is_pipe_needed && pipe(pipeControl->pipe_next) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
@@ -202,17 +241,23 @@ void execute_command_with_args(
 
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
+            *exit_code = -1;
         } else {
             int status;
             waitpid(pid, &status, 0); // Attend que l'enfant termine
             if (WIFEXITED(status) && WEXITSTATUS(status) != 102) {
-                fprintf(stderr, " FG: Command `%d` exited with status %d\n", pid, WEXITSTATUS(status));
+                int exit_status = WEXITSTATUS(status);
+                fprintf(stderr, " FG: Command `%d` exited with status %d\n", pid, exit_status);
+                *exit_code = exit_status; return;
             }
             else if (WIFSIGNALED(status)) {
-                fprintf(stderr, " FG: Command `%d` killed by signal %d\n", pid, WTERMSIG(status));
+                int term_sig = WTERMSIG(status);
+                fprintf(stderr, " FG: Command `%d` killed by signal %d\n", pid, term_sig);
+                *exit_code = 256 + term_sig; return;
             }
         }
     }
+    *exit_code = -2;
 }
 
 

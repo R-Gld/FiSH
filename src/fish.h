@@ -55,11 +55,18 @@
  */
 #define GRAY "\x1B[90m"
 
+/*!
+ * \def RED
+ * \brief Escape code for the color red.
+ * This escape code is used to color the error messages in red.
+ */
+#define RED "\x1B[31m"
+
 
 
 /* All the docs are described in the file fish.c */
 
-void execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line, struct pipe_control *pipeControl, size_t cmd_index);
+void execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line, struct pipe_control *pipeControl, size_t cmd_index, int *exit_code);
 bool manage_intern_cmd(char *cmd, char *args[], struct line *li);
 void cd(char *path);
 void substitute_home(char *path, char *home);
