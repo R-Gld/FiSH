@@ -19,7 +19,7 @@ make clean
 make install
 ```
 
-If you want to generate the documentation, you can run `make docs` after installing the dependencies.
+If you want to generate the documentation, you can run `make full-docs` after installing the dependencies.
 
 ## Usage
 
