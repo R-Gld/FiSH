@@ -11,7 +11,7 @@ The aim of the project is to create a simple shell that allows executing command
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y git gcc make doxygen
+sudo apt-get install -y git gcc make doxygen 
 git clone https://github.com/R-Gld/FiSH.git
 cd FiSH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/execs/
