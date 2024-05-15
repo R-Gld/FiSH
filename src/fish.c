@@ -128,7 +128,6 @@ int main() {
         for (size_t i = 0; i < number_of_cmds; i++)
             if (li.cmds[i].n_args > 0){
                 execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &pc, i, &last_status_code);
-
             }
 
         close_pipe(pc.pipe_prev);
@@ -180,7 +179,6 @@ void execute_command_with_args(
     bool is_pipe_needed = cmd_index < line->n_cmds - 1;
     if (is_pipe_needed && pipe(pipeControl->pipe_next) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
 
-
     bool background = line->background;
 
     if(!background) { // If the command is not executed in background, the SIGINT signal is 'un-ignored'. The previous action was ignore and its action is saved in ign_sa
@@ -202,15 +200,16 @@ void execute_command_with_args(
         }
 
         if (pipeControl->pipe_prev[PREAD] != -1) {
-            if(dup2(pipeControl->pipe_prev[PREAD], STDIN_FILENO) == -1) { perror("dup2 pipe_prev[READ] to STDIN"); exit(EXIT_FAILURE); }
-            if(close(pipeControl->pipe_prev[PREAD]) == -1) { perror("close pipe_prev[READ]"); exit(EXIT_FAILURE); }
+            dup2(pipeControl->pipe_prev[PREAD], STDIN_FILENO);
+            close(pipeControl->pipe_prev[PREAD]);  // Close duplicated descriptors
         }
 
+        // Setup output to next command if not the last command
         if (is_pipe_needed) {
-            if(close(pipeControl->pipe_next[PREAD]) == -1) { perror("close pipe_next[READ]"); exit(EXIT_FAILURE); }
-            if(dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO) == -1) { perror("dup2 pipe_next[WRITE] to stdout"); exit(EXIT_FAILURE); }
-            if(close(pipeControl->pipe_next[PWRITE]) == -1) { perror("close pipe_next[WRITE]"); exit(EXIT_FAILURE); }
+            dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO);
+            close(pipeControl->pipe_next[PWRITE]);  // Close duplicated descriptors
         }
+
 
         manage_file_input(file_input);
         manage_file_output(line->file_output, line->file_output_append);
@@ -238,11 +237,13 @@ void execute_command_with_args(
             close(pipeControl->pipe_next[PWRITE]); // Close next write end in parent after forking
         }
 
+
         // Move pipe_next to pipe_prev for the next command
         pipeControl->pipe_prev[PREAD] = pipeControl->pipe_next[PREAD];
         pipeControl->pipe_prev[PWRITE] = pipeControl->pipe_next[PWRITE];
         pipeControl->pipe_next[PREAD] = -1;
         pipeControl->pipe_next[PWRITE] = -1;
+
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
             *exit_code = -1;
@@ -318,7 +319,8 @@ bool manage_intern_cmd(char *cmd, char *args[], struct line *li) {
  * \brief Change the current working directory.
  * Can handle '~' as a shortcut for the HOME directory.
  *
- * \param path The new working directory. If NULL, the HOME directory is used.
+ * \param path The new working directory. If NULL, the HOME directory is used.<br>
+ *             Can handle the ~ or the ~username shortcuts.
  */
 void cd(char *path) {
     char *resolvedPath = NULL;
