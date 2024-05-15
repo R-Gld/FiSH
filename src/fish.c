@@ -190,6 +190,7 @@ void execute_command_with_args(
         }
     }
     pid_t pid = fork();
+    if(pid == -1) { perror("fork"); exit(EXIT_FAILURE); }
 
     if(debug && pid != 0) fprintf(stderr, "\tpid created %d\n", pid);
 
@@ -226,10 +227,6 @@ void execute_command_with_args(
             }
             exit(102);
         }
-    }
-    else if(pid < 0) {
-        perror("fork");
-        exit(EXIT_FAILURE);
     } else { // Parent process
         apply_ignore(SIGINT, NULL);
 
