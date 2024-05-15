@@ -324,6 +324,8 @@ void cd(char *path) {
     char *resolvedPath = NULL;
     char *homePath = getenv("HOME");
 
+    bool malloced = false;
+
     if (path == NULL) {
         path = homePath;
     } else
@@ -333,21 +335,42 @@ void cd(char *path) {
         }
         else if (path[1] == '/') {
             resolvedPath = malloc(strlen(homePath) + strlen(path));
-            if (resolvedPath == NULL) {
-                perror("malloc");
-                return;
-            }
+            malloced = true;
+            if (resolvedPath == NULL) { perror("malloc"); return; }
             sprintf(resolvedPath, "%s%s", homePath, path + 1);
             path = resolvedPath;
         } else {
-            fprintf(stderr, "cd: no such file or directory: %s\n", path);
-            return;
+            char *username = path + 1;
+            char *end = strchr(username, '/');
+            if (end != NULL) {
+                *end = '\0';
+                struct passwd *user_data = getpwnam(username);
+                if (user_data != NULL) {
+                    resolvedPath = malloc(strlen(user_data->pw_dir) + strlen(end));
+                    malloced = true;
+                    if (resolvedPath == NULL) { perror("malloc"); return; }
+                    sprintf(resolvedPath, "%s%s", user_data->pw_dir, end);
+                    path = resolvedPath;
+                } else {
+                    fprintf(stderr, "cd: no such user: %s\n", username);
+                    return;
+                }
+            } else {
+                struct passwd *user_data = getpwnam(username);
+                if (user_data != NULL) {
+                    path = user_data->pw_dir;
+                } else {
+                    fprintf(stderr, "cd: no such user: %s\n", username);
+                    return;
+                }
+            }
         }
     }
 
     if (chdir(path) == -1) {
         perror("chdir");
     }
+    if(malloced) free(resolvedPath);
 }
 
 /**
