@@ -221,7 +221,7 @@ pid_t execute_command_with_args(
         return -2;
     }
 
-    bool not_the_last_one = (cmd_index < line->n_cmds - 1); // If the command is not the last one, a pipe is needed
+    bool not_the_last_one = (cmd_index < line->n_cmds - 1); // true if the command is not the last one
     if (not_the_last_one && pipe(pipeControl->pipe_next) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
 
     bool background = line->background;
