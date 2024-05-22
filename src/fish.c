@@ -24,7 +24,7 @@
  *
  * Used for the function asprintf.
  */
-#define _DEFAULT_GNU
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
