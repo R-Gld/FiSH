@@ -47,6 +47,9 @@
  */
 volatile bool debug = false;
 
+volatile pid_t bg_array[BG_MAX_SIZE];
+volatile size_t bg_array_size = 0;
+
 
 /**
  * \fn int main()

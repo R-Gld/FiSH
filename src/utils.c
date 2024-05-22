@@ -116,3 +116,9 @@ void substitute_home(char *path, char *home) {
         free(new_path);
     }
 }
+
+void init_bg_array(volatile pid_t *bg_array) {
+    for (size_t i = 0; i < BG_MAX_SIZE; ++i) {
+        bg_array[i] = -1;
+    }
+}

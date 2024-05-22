@@ -8,6 +8,7 @@
 #define FISH_UTILS_H
 
 #include <stdbool.h>
+#include <sys/types.h>
 #include "cmdline.h"
 
 /**
@@ -27,6 +28,12 @@
  * This macro converts a boolean value to a string "Y" if the value is true, and "N" if the value is false.
  */
 #define YES_NO(i) ((i) ? "Y" : "N")
+
+/*!
+ * \def BG_MAX_SIZE
+ * \brief Size of the array containing the pids of the commands executed in background
+ */
+#define BG_MAX_SIZE 1024
 
 
 /**
@@ -95,6 +102,15 @@ void print_debug_line(struct line *li);
  * \param home The home directory. If NULL, the HOME environment variable is used.
  */
 void substitute_home(char *path, char *home);
+
+/**
+ * \fn void init_bg_array(pid_t *bg_array)
+ * \brief Initialize the array of background processes.
+ * \param bg_array The array to initialize.
+ *
+ * Set `-1` in all the cells of the array.
+ */
+void init_bg_array(volatile pid_t *bg_array);
 
 
 #endif //FISH_UTILS_H
