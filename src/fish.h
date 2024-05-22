@@ -62,6 +62,20 @@
  */
 #define RED "\x1B[31m"
 
+/*!
+ * \def BOLD
+ * \brief Escape code for the bold style.
+ * This escape code is used to make the prompt symbol bold.
+ */
+#define BOLD "\x1B[1m"
+
+/*!
+ * \def ITALIC
+ * \brief Escape code for the italic style.
+ * This escape code is used to make the prompt symbol italic.
+ */
+#define ITALIC "\x1B[3m"
+
 
 
 /* All the docs are described in the file fish.c */

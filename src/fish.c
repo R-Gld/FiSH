@@ -108,7 +108,7 @@ int main() {
             asprintf(&exit_color, RED "(" YELLOW "%d" RED ") ", last_status_code - 256);
         }
 
-        printf(YELLOW "FiSH " GRAY "➔" GREEN " %s " GRAY "➔" BLUE " %s" RESET "\n\t%s■ " RESET "➔ ", username, current_dir, exit_color);
+        printf(YELLOW "FiSH " GRAY "➔" GREEN ITALIC " %s " RESET GRAY "➔" BLUE " %s" RESET "\n\t%s■ " RESET "➔ ", username, current_dir, exit_color);
         free(current_dir);
         fgets(buf, BUFLEN, stdin);
 
