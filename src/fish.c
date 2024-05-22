@@ -254,6 +254,7 @@ pid_t execute_command_with_args(
         if (not_the_last_one) {
             dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO);
             close(pipeControl->pipe_next[PWRITE]);  // Close duplicated descriptors
+            close(pipeControl->pipe_next[PREAD]);  // Close unused read end
         }
 
 
