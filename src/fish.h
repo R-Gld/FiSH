@@ -80,12 +80,17 @@
 
 /* All the docs are described in the file fish.c */
 
-void execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line, struct pipe_control *pipeControl, size_t cmd_index, int *exit_code);
+pid_t execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line, struct pipe_control *pipeControl, size_t cmd_index, int *exit_code);
 bool manage_intern_cmd(char *cmd, char *args[], struct line *li);
 void cd(char *path);
 void substitute_home(char *path, char *home);
 void sigchld_handler(int signum);
-struct sigaction manage_sigaction();
+struct standard_signals manage_sigaction();
 void apply_ignore(int signal, struct sigaction *old_sigaction);
+
+struct standard_signals {
+    struct sigaction sigint;
+    struct sigaction sigchld;
+};
 
 #endif //FISH_FISH_H

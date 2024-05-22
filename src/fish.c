@@ -68,7 +68,13 @@ volatile size_t bg_array_size = 0;
  *          1 otherwise
  */
 int main() {
-    printf(YELLOW "\n       _______ _________ _______          \n      (  ____ \\\\__   __/(  ____ \\|\\     /|\n      | (    \\/   ) (   | (    \\/| )   ( |\n      | (__       | |   | (_____ | (___) |\n      |  __)      | |   (_____  )|  ___  |\n      | (         | |         ) || (   ) |\n      | )      ___) (___/\\____) || )   ( |\n      |/       \\_______/\\_______)|/     \\|\n\n\n" RESET);
+    char *current_dir = NULL;
+    char *exit_color = RESET;
+
+    init_bg_array(bg_array);
+
+
+    printf(YELLOW BOLD "\n       _______ _________ _______          \n      (  ____ \\\\__   __/(  ____ \\|\\     /|\n      | (    \\/   ) (   | (    \\/| )   ( |\n      | (__       | |   | (_____ | (___) |\n      |  __)      | |   (_____  )|  ___  |\n      | (         | |         ) || (   ) |\n      | )      ___) (___/\\____) || )   ( |\n      |/       \\_______/\\_______)|/     \\|\n\n\n" RESET);
 
     struct line li;
     char buf[BUFLEN];
@@ -77,7 +83,10 @@ int main() {
 
     int last_status_code = 0;
 
-    struct sigaction sa_standard_SIGINT = manage_sigaction();
+    struct standard_signals sigs = manage_sigaction();
+
+    struct sigaction sa_standard_SIGINT = sigs.sigint;
+    struct sigaction sa_standard_SIGCHLD = sigs.sigchld;
 
     struct passwd *user_data = getpwuid(getuid());
     char *home = getenv("HOME");
@@ -86,11 +95,9 @@ int main() {
     char *username = user_data->pw_name;
 
     for (;;) {
-        char *current_dir = getcwd(NULL, 0);
+        current_dir = getcwd(NULL, 0);
         if(current_dir == NULL) { perror("getcwd (current_dir)"); exit(EXIT_FAILURE); }
         substitute_home(current_dir, home);
-
-        char *exit_color;
 
         switch(last_status_code) {
             case 0:
@@ -128,10 +135,40 @@ int main() {
         struct pipe_control pc;
         init_pipe_control(&pc);
 
-        for (size_t i = 0; i < number_of_cmds; i++)
-            if (li.cmds[i].n_args > 0){
-                execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT, &li, &pc, i, &last_status_code);
+        pid_t child_pids_foregrounds[MAX_CMDS];
+        size_t num_child_pids = 0;
+
+        if (li.background) {
+
+        }
+
+        for (size_t i = 0; i < number_of_cmds; i++) {
+            if (li.cmds[i].n_args > 0) {
+                pid_t child_pid = execute_command_with_args(li.cmds[i].args[0], li.cmds[i].args, &sa_standard_SIGINT,
+                                                            &li, &pc, i, &last_status_code);
+                if (child_pid > 0 || child_pid == -2) {
+                    child_pids_foregrounds[num_child_pids++] = child_pid;
+                }
             }
+        }
+        for(size_t i = 0; i < num_child_pids; i++) {
+            pid_t child_pid = child_pids_foregrounds[i];
+            if(child_pid == -2) continue; // Internal command.
+            int status;
+            if(debug) printf("Waiting for %d\n", child_pid);
+            if (waitpid(child_pid, &status, 0) == -1) perror("Waitpid");
+            else {
+                if (WIFEXITED(status)) {
+                    int exit_status = WEXITSTATUS(status);
+                    fprintf(stderr, " FG: Command `%d` exited with status %d\n", child_pid, exit_status);
+                    last_status_code = exit_status;
+                } else if (WIFSIGNALED(status)) {
+                    int term_sig = WTERMSIG(status);
+                    fprintf(stderr, " FG: Command `%d` killed by signal %d\n", child_pid, term_sig);
+                    last_status_code = 256 + term_sig;
+                }
+            }
+        }
 
         close_pipe(pc.pipe_prev);
 
@@ -163,8 +200,13 @@ int main() {
  *                  The exit code is stored in the variable pointed by this parameter.<br>
  *                  If the command is executed in background, the exit code is set to -1<br>
  *                  By default, if any of theses cases does not occur, the exit code is set to -2.
+ *
+ *  \return The PID of the child process if the command is executed in foreground,
+ *          0 if executed in background,
+ *          -2 if the command is an internal command,
+ *          -1 if an error occurs.
  */
-void execute_command_with_args(
+pid_t execute_command_with_args(
             char *cmd,
             char *args[],
             struct sigaction *standardSigintAction,
@@ -176,11 +218,11 @@ void execute_command_with_args(
 
     if (manage_intern_cmd(cmd, args, line)){
         *exit_code = -3;
-        return;
+        return -2;
     }
 
-    bool is_pipe_needed = cmd_index < line->n_cmds - 1;
-    if (is_pipe_needed && pipe(pipeControl->pipe_next) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
+    bool not_the_last_one = (cmd_index < line->n_cmds - 1); // If the command is not the last one, a pipe is needed
+    if (not_the_last_one && pipe(pipeControl->pipe_next) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
 
     bool background = line->background;
 
@@ -202,13 +244,13 @@ void execute_command_with_args(
             file_input = "/dev/null";
         }
 
-        if (pipeControl->pipe_prev[PREAD] != -1) {
+        if (pipeControl->pipe_prev[PREAD] != -1) { // it isn't -1 when the command isn't the first one
             dup2(pipeControl->pipe_prev[PREAD], STDIN_FILENO);
             close(pipeControl->pipe_prev[PREAD]);  // Close duplicated descriptors
         }
 
         // Setup output to next command if not the last command
-        if (is_pipe_needed) {
+        if (not_the_last_one) {
             dup2(pipeControl->pipe_next[PWRITE], STDOUT_FILENO);
             close(pipeControl->pipe_next[PWRITE]);  // Close duplicated descriptors
         }
@@ -236,7 +278,7 @@ void execute_command_with_args(
             close(pipeControl->pipe_prev[PREAD]); // Always close previous read end in parent
         }
 
-        if (is_pipe_needed) {
+        if (not_the_last_one) {
             close(pipeControl->pipe_next[PWRITE]); // Close next write end in parent after forking
         }
 
@@ -250,22 +292,14 @@ void execute_command_with_args(
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
             *exit_code = -1;
+            bg_array[bg_array_size++] = pid;
+            return 0;
         } else {
-            int status;
-            waitpid(pid, &status, 0); // Attend que l'enfant termine
-            if (WIFEXITED(status) && WEXITSTATUS(status) != 102) {
-                int exit_status = WEXITSTATUS(status);
-                fprintf(stderr, " FG: Command `%d` exited with status %d\n", pid, exit_status);
-                *exit_code = exit_status; return;
-            }
-            else if (WIFSIGNALED(status)) {
-                int term_sig = WTERMSIG(status);
-                fprintf(stderr, " FG: Command `%d` killed by signal %d\n", pid, term_sig);
-                *exit_code = 256 + term_sig; return;
-            }
+            return pid;
         }
     }
     *exit_code = -2;
+    return -1;
 }
 
 
@@ -398,18 +432,18 @@ void sigchld_handler(int signum) {
     pid_t pid;
     char buffer[128];
 
-    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        if (WIFEXITED(status)) {
-            int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` exited with status %d\n", pid, WEXITSTATUS(status));
-            if (n > 0) {
-                write(STDERR_FILENO, buffer, n);
+    for(size_t i = 0; i < bg_array_size; i++) {
+        pid = bg_array[i];
+        if (waitpid(pid, &status, WNOHANG) > 0) {
+            if (WIFEXITED(status)) {
+                int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` exited with status %d\n", pid, WEXITSTATUS(status));
+                if (n > 0) write(STDERR_FILENO, buffer, n);
             }
-        }
-        else if (WIFSIGNALED(status)) {
-            int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` killed by signal %d\n", pid, WTERMSIG(status));
-            if (n > 0) {
-                write(STDERR_FILENO, buffer, n);
+            else if (WIFSIGNALED(status)) {
+                int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` killed by signal %d\n", pid, WTERMSIG(status));
+                if (n > 0) write(STDERR_FILENO, buffer, n);
             }
+            bg_array[i] = -1;
         }
     }
 }
@@ -423,7 +457,7 @@ void sigchld_handler(int signum) {
  *
  * \return The previous action for the SIGINT signal.
  */
-struct sigaction manage_sigaction() {
+struct standard_signals manage_sigaction() {
     struct sigaction sa_standard_SIGINT;
     apply_ignore(SIGINT, &sa_standard_SIGINT);
 
@@ -431,8 +465,13 @@ struct sigaction manage_sigaction() {
     sigemptyset(&sa_SIGCHILD.sa_mask);
     sa_SIGCHILD.sa_flags = SA_RESTART;
     sa_SIGCHILD.sa_handler = sigchld_handler;
+
     if(sigaction(SIGCHLD, &sa_SIGCHILD, NULL) == -1) { perror("sigaction"); exit(EXIT_FAILURE); }
-    return sa_standard_SIGINT;
+
+    struct standard_signals sigs;
+    sigs.sigint = sa_standard_SIGINT;
+    sigs.sigchld = sa_SIGCHILD;
+    return sigs;
 }
 
 /**
