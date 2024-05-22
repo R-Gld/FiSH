@@ -86,7 +86,8 @@ int main() {
     struct standard_signals sigs = manage_sigaction();
 
     struct sigaction sa_standard_SIGINT = sigs.sigint;
-    struct sigaction sa_standard_SIGCHLD = sigs.sigchld;
+    // sa_standard_SIGCHLD is no longer used.
+    // struct sigaction sa_standard_SIGCHLD = sigs.sigchld;
 
     struct passwd *user_data = getpwuid(getuid());
     char *home = getenv("HOME");
