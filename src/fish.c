@@ -18,7 +18,7 @@
  */
 #define _DEFAULT_SOURCE
 
-/**
+/*!
  * \def _DEFAULT_GNU
  * \brief Define to enable the use of some GNU extensions.
  *
@@ -41,13 +41,22 @@
 #include "cmdline.h"
 #include "utils.h"
 
-/**
+/*!
  * \var bool debug
  * \brief Flag to enable debug messages.
  */
 volatile bool debug = false;
 
+/*!
+ * \var pid_t bg_array[BG_MAX_SIZE]
+ * \brief Array of background processes.
+ */
 volatile pid_t bg_array[BG_MAX_SIZE];
+
+    /*!
+ * \var size_t bg_array_size
+ * \brief Size of the array of background processes.
+ */
 volatile size_t bg_array_size = 0;
 
 
@@ -138,10 +147,6 @@ int main() {
 
         pid_t child_pids_foregrounds[MAX_CMDS];
         size_t num_child_pids = 0;
-
-        if (li.background) {
-
-        }
 
         for (size_t i = 0; i < number_of_cmds; i++) {
             if (li.cmds[i].n_args > 0) {
