@@ -15,6 +15,9 @@ EXECS 				= $(EXEC_DIR)/fish $(EXEC_DIR)/cmdline_test
 SOURCES 			= $(SRC_DIR)/cmdline.c $(SRC_DIR)/fish.c $(SRC_DIR)/cmdline_test.c $(SRC_DIR)/utils.c
 OBJECTS 			= $(OBJ_DIR)/cmdline.o $(OBJ_DIR)/fish.o $(OBJ_DIR)/cmdline_test.o $(OBJ_DIR)/utils.o
 
+PERMANENT_FISH_EXEC = /usr/local/bin/fish
+PERMANENT_LIB_CMDLINE = /usr/local/lib/libcmdline.so
+
 all: clean install
 
 install: dirs libs $(EXECS)
@@ -66,15 +69,25 @@ open-pdf: docs-pdf
 check-doxygen:
 	@dpkg -s doxygen > /dev/null 2>&1 || (echo "Doxygen is not installed. Please install it using 'sudo apt-get install doxygen'." && exit 1)
 
-run: install
-	$(EXEC_DIR)/fish
-
 permanent-install: install
-	sudo ln -s $$PWD/$(EXEC_DIR)/fish /usr/local/bin/fish 2> /dev/null || true
-	sudo ln -s $$PWD/$(EXEC_DIR)/libcmdline.so /usr/local/lib/libcmdline.so 2> /dev/null || true
+	sudo rm $(PERMANENT_FISH_EXEC) $(PERMANENT_LIB_CMDLINE) 2> /dev/null || true
+	sudo ln -s $$PWD/$(EXEC_DIR)/fish $(PERMANENT_FISH_EXEC)
+	sudo ln -s $$PWD/$(EXEC_DIR)/libcmdline.so $(PERMANENT_LIB_CMDLINE)
 	sudo ldconfig
 	@echo "\n\033[1;34mFish installed successfully!\nNow, you can run it by typing 'fish' in your terminal.\033[0m"
 
+help:
+	@echo "Usage: make [target]"
+	@echo "Targets:"
+	@echo "\tall:\t\t\tClean, compile and install the project"
+	@echo "\tinstall:\t\tCompile and install the project"
+	@echo "\tpermanent-install:\tInstall the fish shell permanently"
+	@echo "\tclean:\t\t\tRemove all generated files"
+	@echo "\tdocs:\t\t\tGenerate the documentation"
+	@echo "\tdocs-pdf:\t\tGenerate the PDF documentation"
+	@echo "\topen-docs:\t\tOpen the HTML documentation"
+	@echo "\topen-pdf:\t\tOpen the PDF documentation"
+	@echo "\tcheck-doxygen:\t\tCheck if doxygen is installed"
 
-.PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf check-doxygen run install permanent-install
+.PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf check-doxygen install permanent-install help
 # .PHONY => tells make that these targets do not produce files
