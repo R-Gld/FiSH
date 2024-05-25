@@ -1,3 +1,5 @@
+[![C CI Build](https://github.com/R-Gld/FiSH/actions/workflows/c.yml/badge.svg)](https://github.com/R-Gld/FiSH/actions/workflows/c.yml)
+
 # FiSH
 
 ## Description
