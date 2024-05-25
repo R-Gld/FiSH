@@ -46,6 +46,57 @@ struct pipe_control {
 };
 
 /*!
+ * \struct background_exit_status
+ * \brief Structure representing the exit status of a background process.
+ * This structure holds the PID of the process, as well as the status of the process when it exited.
+ * if signaled is 1, the process was killed by a signal. Otherwise it exited normally.
+ * then status_data is the signal number if signaled is 1, or the exit status if signaled is 0.
+ */
+struct background_exit_status {
+    /*!
+     * \var pid_t pid
+     * \brief The PID of the process.
+     */
+    volatile pid_t pid;
+    /*!
+     * \var int signaled
+     * \brief If signaled is 1, the process was killed by a signal. Otherwise it exited normally.
+     */
+    volatile int signaled;
+    /*!
+     * \var int status_data
+     * \brief If signaled is 1, the process was killed, so status_data is the signal number. Otherwise it is the exit status.
+     */
+    volatile int status_data;
+};
+
+/*!
+ * \struct bg_data
+ * \brief Structure holding the background processes.
+ */
+struct bg_data {
+    /*!
+     * \var pid_t bg_array[BG_MAX_SIZE]
+     * \brief Array of background processes.
+     */
+    volatile pid_t bg_array[BG_MAX_SIZE];
+
+    /*!
+     * \var size_t bg_array_size
+     * \brief Size of the array of background processes.
+     */
+    volatile size_t bg_array_size;
+
+    /*!
+     * \var struct background_exit_status exit_statuses[BG_MAX_SIZE]
+     * \brief Array of
+     */
+    volatile struct background_exit_status exit_statuses[BG_MAX_SIZE];
+
+    volatile size_t exit_statuses_size;
+};
+
+/*!
  * \fn void init_pipe_control(struct pipe_control *pc)
  * \param pc The pipe_control structure to initialize.
  */
@@ -104,13 +155,19 @@ void print_debug_line(struct line *li);
 void substitute_home(char *path, char *home);
 
 /*!
- * \fn void init_bg_array(pid_t *bg_array)
+ * \fn void init_background_data(pid_t *bg_array)
  * \brief Initialize the array of background processes.
  * \param bg_array The array to initialize.
  *
  * Set `-1` in all the cells of the array.
  */
-void init_bg_array(volatile pid_t *bg_array);
+void init_background_data(volatile struct bg_data background_data);
+
+/*!
+ * \fn void print_backgrounds_processes(pid_t *bg_array)
+ * \param exit_status the background_exit_status struct to initialize.
+ */
+void init_exit_status(volatile struct background_exit_status *exit_status);
 
 
 #endif //FISH_UTILS_H

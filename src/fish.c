@@ -35,6 +35,7 @@
 #include <string.h>
 #include <errno.h>
 #include <pwd.h>
+#include <limits.h>
 
 
 #include "fish.h"
@@ -47,20 +48,15 @@
  */
 volatile bool debug = false;
 
-/*!
- * \var pid_t bg_array[BG_MAX_SIZE]
- * \brief Array of background processes.
+/**
+ * \var volatile struct bg_data background_data
+ * \brief Global instance of background_data.
+ * This variable is used to store the background processes data.
  */
-volatile pid_t bg_array[BG_MAX_SIZE];
-
-    /*!
- * \var size_t bg_array_size
- * \brief Size of the array of background processes.
- */
-volatile size_t bg_array_size = 0;
+volatile struct bg_data background_data;
 
 
-/*!
+/**
  * \fn int main()
  * \brief Main function of the FiSH shell.
  * This function is the main loop of the shell. It reads the command line entered by the user,
@@ -77,10 +73,10 @@ volatile size_t bg_array_size = 0;
  *          1 otherwise
  */
 int main() {
-    char *current_dir = NULL;
+    char current_dir[PATH_MAX];
     char *exit_color = RESET;
 
-    init_bg_array(bg_array);
+    init_background_data(background_data);
 
 
     printf(YELLOW BOLD "\n       _______ _________ _______          \n      (  ____ \\\\__   __/(  ____ \\|\\     /|\n      | (    \\/   ) (   | (    \\/| )   ( |\n      | (__       | |   | (_____ | (___) |\n      |  __)      | |   (_____  )|  ___  |\n      | (         | |         ) || (   ) |\n      | )      ___) (___/\\____) || )   ( |\n      |/       \\_______/\\_______)|/     \\|\n\n\n" RESET);
@@ -105,8 +101,10 @@ int main() {
     char *username = user_data->pw_name;
 
     for (;;) {
-        current_dir = getcwd(NULL, 0);
-        if(current_dir == NULL) { perror("getcwd (current_dir)"); exit(EXIT_FAILURE); }
+        if(getcwd(current_dir, sizeof(current_dir)) == NULL) {
+            perror("getcwd (current_dir)");
+            exit(EXIT_FAILURE);
+        }
         substitute_home(current_dir, home);
 
         switch(last_status_code) {
@@ -129,7 +127,6 @@ int main() {
         }
 
         printf(YELLOW "FiSH " GRAY "➔" GREEN ITALIC " %s " RESET GRAY "➔" BLUE " %s" RESET "\n\t%s■ " RESET "➔ ", username, current_dir, exit_color);
-        free(current_dir);
         fgets(buf, BUFLEN, stdin);
 
         int err = line_parse(&li, buf);
@@ -174,6 +171,7 @@ int main() {
                     last_status_code = 256 + term_sig;
                 }
             }
+            print_backgrounds_processes();
         }
 
         close_pipe(pc.pipe_prev);
@@ -299,7 +297,7 @@ pid_t execute_command_with_args(
         if (background) {
             printf(" BG: Command `%d` running in background\n", pid);
             *exit_code = -1;
-            bg_array[bg_array_size++] = pid;
+            background_data.bg_array[background_data.bg_array_size++] = pid;
             return 0;
         } else {
             return pid;
@@ -437,22 +435,43 @@ void cd(char *path) {
 void sigchld_handler(int signum) {
     int status;
     pid_t pid;
-    char buffer[128];
 
-    for(size_t i = 0; i < bg_array_size; i++) {
-        pid = bg_array[i];
+    for(size_t i = 0; i < background_data.bg_array_size; i++) {
+        pid = background_data.bg_array[i];
         if (pid != -1 && waitpid(pid, &status, WNOHANG) > 0) {
+            volatile struct background_exit_status bg_exit_status;
+            init_exit_status(&bg_exit_status);
+
+            bg_exit_status.pid = pid;
+
             if (WIFEXITED(status)) {
-                int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` exited with status %d\n", pid, WEXITSTATUS(status));
-                if (n > 0) write(STDERR_FILENO, buffer, n);
+                bg_exit_status.signaled = 0;
+                bg_exit_status.status_data = WEXITSTATUS(status);
             }
             else if (WIFSIGNALED(status)) {
-                int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` killed by signal %d\n", pid, WTERMSIG(status));
-                if (n > 0) write(STDERR_FILENO, buffer, n);
+                bg_exit_status.signaled = 1;
+                bg_exit_status.status_data = WTERMSIG(status);
             }
-            bg_array[i] = -1;
+            background_data.bg_array[i] = -1;
+            background_data.exit_statuses[background_data.exit_statuses_size++] = bg_exit_status;
         }
     }
+}
+
+void print_backgrounds_processes() {
+    volatile struct background_exit_status *statuses = background_data.exit_statuses;
+    for(size_t i = 0; i < background_data.exit_statuses_size; i++) {
+        volatile struct background_exit_status actual = statuses[i];
+        if(actual.pid != -1) {
+            if(actual.signaled) {
+                fprintf(stderr, " BG: Command `%d` killed by signal %d\n", actual.pid, actual.status_data);
+            } else {
+                fprintf(stderr, " BG: Command `%d` exited with status %d\n", actual.pid, actual.status_data);
+            }
+            init_exit_status(&statuses[i]);
+        }
+    }
+    background_data.exit_statuses_size = 0;
 }
 
 /*!

@@ -118,8 +118,20 @@ void substitute_home(char *path, char *home) {
     }
 }
 
-void init_bg_array(volatile pid_t *bg_array) {
+void init_background_data(volatile struct bg_data background_data) {
     for (size_t i = 0; i < BG_MAX_SIZE; ++i) {
-        bg_array[i] = -1;
+        background_data.bg_array[i] = -1;
     }
+    background_data.bg_array_size = 0;
+
+    for (size_t i = 0; i < BG_MAX_SIZE; ++i) {
+        init_exit_status(&background_data.exit_statuses[i]);
+    }
+    background_data.exit_statuses_size = 0;
+}
+
+void init_exit_status(volatile struct background_exit_status *exit_status) {
+    exit_status->pid = -1;
+    exit_status->status_data = -1;
+    exit_status->signaled = -1;
 }

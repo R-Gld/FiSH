@@ -87,6 +87,7 @@ void substitute_home(char *path, char *home);
 void sigchld_handler(int signum);
 struct standard_signals manage_sigaction();
 void apply_ignore(int signal, struct sigaction *old_sigaction);
+void print_backgrounds_processes();
 
 /*!
  * \struct standard_signals
