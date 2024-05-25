@@ -19,6 +19,7 @@ cd FiSH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/execs # Make temporary library available.
 # If you wan't to install it permanently, see the next section.
 make clean install # Compile the project
+# or make clean permanent-install # Compile the project and add the executable to your path
 ```
 
 If you want to generate the documentation, you can run `make full-docs` after installing the dependencies.

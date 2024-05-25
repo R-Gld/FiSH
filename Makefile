@@ -83,11 +83,13 @@ help:
 	@echo "\tinstall:\t\tCompile and install the project"
 	@echo "\tpermanent-install:\tInstall the fish shell permanently"
 	@echo "\tclean:\t\t\tRemove all generated files"
-	@echo "\tdocs:\t\t\tGenerate the documentation"
-	@echo "\tdocs-pdf:\t\tGenerate the PDF documentation"
+	@echo "\t-----------------------------------------------------------------------------------"
+	@echo "\tcheck-doxygen:\t\tCheck if doxygen is installed (The documentation generator)"
+	@echo "\tdocs:\t\t\tGenerate the HTML / Manpage documentation"
+	@echo "\tfull-docs:\t\tGenerate the HTML / Manpage / PDF documentation"
 	@echo "\topen-docs:\t\tOpen the HTML documentation"
 	@echo "\topen-pdf:\t\tOpen the PDF documentation"
-	@echo "\tcheck-doxygen:\t\tCheck if doxygen is installed"
+	@echo "\tdocs-pdf:\t\tGenerate the PDF documentation"
 
 .PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf check-doxygen install permanent-install help
 # .PHONY => tells make that these targets do not produce files
