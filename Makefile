@@ -64,7 +64,7 @@ open-pdf: docs-pdf
 # --- Special Targets --- #
 
 check-doxygen:
-	@dpkg -s doxygen > /dev/null 2&>1 || (echo "Doxygen is not installed. Please install it using 'sudo apt-get install doxygen'." && exit 1)
+	@dpkg -s doxygen > /dev/null 2>&1 || (echo "Doxygen is not installed. Please install it using 'sudo apt-get install doxygen'." && exit 1)
 
 run: install
 	$(EXEC_DIR)/fish
