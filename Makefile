@@ -70,7 +70,7 @@ run: install
 	$(EXEC_DIR)/fish
 
 permanent-install: install
-	sudo cp $$PWD/$(EXEC_DIR)/fish /usr/local/bin/fish
+	sudo ln -s $$PWD/$(EXEC_DIR)/fish /usr/local/bin/fish 2> /dev/null || true
 	sudo ln -s $$PWD/$(EXEC_DIR)/libcmdline.so /usr/local/lib/libcmdline.so 2> /dev/null || true
 	sudo ldconfig
 	@echo "\n\033[1;34mFish installed successfully!\nNow, you can run it by typing 'fish' in your terminal.\033[0m"
