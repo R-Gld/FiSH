@@ -441,7 +441,7 @@ void sigchld_handler(int signum) {
 
     for(size_t i = 0; i < bg_array_size; i++) {
         pid = bg_array[i];
-        if (waitpid(pid, &status, WNOHANG) > 0) {
+        if (pid != -1 && waitpid(pid, &status, WNOHANG) > 0) {
             if (WIFEXITED(status)) {
                 int n = snprintf(buffer, sizeof(buffer), " BG: Command `%d` exited with status %d\n", pid, WEXITSTATUS(status));
                 if (n > 0) write(STDERR_FILENO, buffer, n);
