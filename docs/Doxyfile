@@ -107,7 +107,7 @@ WARN_AS_ERROR          = NO
 WARN_FORMAT            = "$file:$line: $text"
 WARN_LINE_FORMAT       = "at line $line of file $file"
 WARN_LOGFILE           =
-INPUT                  = /home/rgld_/01-dev-projects/PROJETS_S4/fish/src
+INPUT                  = /home/rgld_/01-dev-projects/PROJETS_S4/fish/docs/mainpage.dox /home/rgld_/01-dev-projects/PROJETS_S4/fish/src
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
