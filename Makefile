@@ -69,5 +69,11 @@ check-doxygen:
 run: install
 	$(EXEC_DIR)/fish
 
-.PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf check-doxygen run install
+permanent-install: install
+	sudo cp $$PWD/$(EXEC_DIR)/fish /usr/local/bin/fish
+	sudo ln -s $$PWD/$(EXEC_DIR)/libcmdline.so /usr/local/lib/libcmdline.so
+	sudo ldconfig
+
+
+.PHONY: all clean libs dirs docs docs-pdf open-docs open-pdf check-doxygen run install permanent-install
 # .PHONY => tells make that these targets do not produce files
