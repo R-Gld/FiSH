@@ -57,7 +57,6 @@ volatile struct bg_data background_data;
 
 
 /**
- * \fn int main()
  * \brief Main function of the FiSH shell.
  * This function is the main loop of the shell. It reads the command line entered by the user,
  * parses it, and executes the commands.
@@ -182,7 +181,7 @@ int main() {
 
 
 /*!
- * \fn void execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line)
+ * \fn pid_t execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line, struct pipe_control *pipeControl, size_t cmd_index, int *exit_code)
  * \brief Execute a command with its arguments.
  *
  * This function executes the command given in argument with its arguments.
@@ -458,6 +457,11 @@ void sigchld_handler(int signum) {
     }
 }
 
+/*!
+ * \fn void print_backgrounds_processes()
+ * \brief Print the exit statuses of the background processes.
+ * This function prints the exit statuses of the background processes.
+ */
 void print_backgrounds_processes() {
     volatile struct background_exit_status *statuses = background_data.exit_statuses;
     for(size_t i = 0; i < background_data.exit_statuses_size; i++) {

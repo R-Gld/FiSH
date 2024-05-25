@@ -41,8 +41,16 @@
  * \brief Structure helping manage pipes.
  */
 struct pipe_control {
-    int pipe_prev[2]; /*!< File descriptors for the previous pipe. */
-    int pipe_next[2]; /*!< File descriptors for the next pipe. */
+    /*!
+     * \var pipe_prev
+     * \brief File descriptors for the previous pipe.
+     */
+    int pipe_prev[2];
+    /*!
+     * \var pipe_next
+     * \brief File descriptors for the next pipe.
+     */
+    int pipe_next[2];
 };
 
 /*!
@@ -53,9 +61,21 @@ struct pipe_control {
  * then status_data is the signal number if signaled is 1, or the exit status if signaled is 0.
  */
 struct background_exit_status {
-    volatile pid_t pid; /*! The PID of the process. */
-    volatile int signaled; /*! If signaled is 1, the process was killed by a signal. Otherwise it exited normally. */
-    volatile int status_data; /*! If signaled is 1, the process was killed, so status_data is the signal number. Otherwise it is the exit status. */
+    /*!
+     * \var pid
+     * \brief The PID of the process.
+     */
+    volatile pid_t pid;
+    /*!
+     * \var signaled
+     * \brief If signaled is 1, the process was killed by a signal. Otherwise it exited normally.
+     */
+    volatile int signaled;
+    /*!
+     * \var status_data
+     * \brief If signaled is 1, the process was killed, so status_data is the signal number. Otherwise it is the exit status.
+     */
+    volatile int status_data;
 };
 
 /*!
@@ -63,11 +83,27 @@ struct background_exit_status {
  * \brief Structure holding the background processes.
  */
 struct bg_data {
-    volatile pid_t bg_array[BG_MAX_SIZE]; /*! Array of background processes. */
-    volatile size_t bg_array_size; /*! Size of the array of background processes. */
+    /*!
+     * \var bg_array
+     * \brief Array holding the PIDs of background processes.
+     */
+    volatile pid_t bg_array[BG_MAX_SIZE];
+    /*!
+     * \var bg_array_size
+     * \brief Size of the array of background processes.
+     */
+    volatile size_t bg_array_size;
 
-    volatile struct background_exit_status exit_statuses[BG_MAX_SIZE]; /*! Array of exit statuses for background processes. */
-    volatile size_t exit_statuses_size; /*! Size of the array of exit statuses for background processes. */
+    /*!
+     * \var exit_statuses
+     * \brief Array holding the exit statuses of background processes.
+     */
+    volatile struct background_exit_status exit_statuses[BG_MAX_SIZE];
+    /*!
+     * \var exit_statuses_size
+     * \brief Size of the array of exit statuses for background processes.
+     */
+    volatile size_t exit_statuses_size;
 };
 
 /*!
@@ -129,17 +165,20 @@ void print_debug_line(struct line *li);
 void substitute_home(char *path, char *home);
 
 /*!
- * \fn void init_background_data(pid_t *bg_array)
+ * \fn void init_background_data(volatile struct bg_data background_data)
  * \brief Initialize the array of background processes.
- * \param bg_array The array to initialize.
+ * \param background_data The background_data structure to initialize.
  *
- * Set `-1` in all the cells of the array.
+ * This function sets all PIDs in the bg_array to -1 and initializes the size of the array and exit statuses
  */
 void init_background_data(volatile struct bg_data background_data);
 
 /*!
- * \fn void print_backgrounds_processes(pid_t *bg_array)
+ * \fn void init_exit_status(volatile struct background_exit_status *exit_status)
+ * \brief Initialize the exit_status structure.
  * \param exit_status the background_exit_status struct to initialize.
+ *
+ * This function sets the initial values for the PID, signaled flag, and status_data of a background_exit_status structure.
  */
 void init_exit_status(volatile struct background_exit_status *exit_status);
 

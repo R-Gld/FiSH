@@ -95,7 +95,15 @@ void print_backgrounds_processes();
  * This structure holds the standard signal actions for the signals SIGINT and SIGCHLD.
  */
 struct standard_signals {
+    /*!
+     * \var sigint
+     * \brief The action for the SIGINT signal.
+     */
     struct sigaction sigint;
+    /*!
+     * \var sigchld
+     * \brief The action for the SIGCHLD signal.
+     */
     struct sigaction sigchld;
 };
 

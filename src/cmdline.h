@@ -32,8 +32,16 @@
  * strings, with the last element being NULL. The number of arguments is stored in the "n_args" field.
  */
 struct cmd {
-  char *args[MAX_ARGS + 1];  /*!< Array of arguments for the command. */
-  size_t n_args;             /*!< Number of arguments for the command. */
+    /*!
+     * \var args
+     * \brief Array of arguments for the command.
+     */
+    char *args[MAX_ARGS + 1];
+    /*!
+     * \var n_args
+     * \brief Number of arguments for the command.
+     */
+    size_t n_args;
 };
 
 
@@ -47,16 +55,40 @@ struct cmd {
  * well as a flag for background execution.
  */
 struct line {
-  struct cmd cmds[MAX_CMDS];  /*!< Array of commands in the command line. */
-  size_t n_cmds;              /*!< Number of commands in the command line. */
-  char *file_input;           /*!< Filename for input redirection. */
-  char *file_output;          /*!< Filename for output redirection. */
-  bool file_output_append;    /*!< Flag indicating whether to append to the output file. */
-  bool background;            /*!< Flag indicating background execution. */
+    /*!
+     * \var cmds
+     * \brief Array of commands in the command line.
+     */
+    struct cmd cmds[MAX_CMDS];
+    /*!
+     * \var n_cmds
+     * \brief Number of commands in the command line.
+     */
+    size_t n_cmds;
+    /*!
+     * \var file_input
+     * \brief Filename for input redirection.
+     */
+    char *file_input;
+    /*!
+     * \var file_output
+     * \brief Filename for output redirection.
+     */
+    char *file_output;
+    /*!
+     * \var file_output_append
+     * \brief Flag indicating whether to append to the output file.
+     */
+    bool file_output_append;
+    /*!
+     * \var background
+     * \brief Flag indicating background execution.
+     */
+    bool background;
 };
 
 /*!
- * \fn static bool valid_cmdarg_filename(const char *word)
+ * \fn line_init(struct line *li)
  * \brief Init the struct line given in parameter
  * All the bits of the structure are set to 0
  *
