@@ -53,21 +53,9 @@ struct pipe_control {
  * then status_data is the signal number if signaled is 1, or the exit status if signaled is 0.
  */
 struct background_exit_status {
-    /*!
-     * \var pid_t pid
-     * \brief The PID of the process.
-     */
-    volatile pid_t pid;
-    /*!
-     * \var int signaled
-     * \brief If signaled is 1, the process was killed by a signal. Otherwise it exited normally.
-     */
-    volatile int signaled;
-    /*!
-     * \var int status_data
-     * \brief If signaled is 1, the process was killed, so status_data is the signal number. Otherwise it is the exit status.
-     */
-    volatile int status_data;
+    volatile pid_t pid; /*! The PID of the process. */
+    volatile int signaled; /*! If signaled is 1, the process was killed by a signal. Otherwise it exited normally. */
+    volatile int status_data; /*! If signaled is 1, the process was killed, so status_data is the signal number. Otherwise it is the exit status. */
 };
 
 /*!
@@ -75,25 +63,11 @@ struct background_exit_status {
  * \brief Structure holding the background processes.
  */
 struct bg_data {
-    /*!
-     * \var pid_t bg_array[BG_MAX_SIZE]
-     * \brief Array of background processes.
-     */
-    volatile pid_t bg_array[BG_MAX_SIZE];
+    volatile pid_t bg_array[BG_MAX_SIZE]; /*! Array of background processes. */
+    volatile size_t bg_array_size; /*! Size of the array of background processes. */
 
-    /*!
-     * \var size_t bg_array_size
-     * \brief Size of the array of background processes.
-     */
-    volatile size_t bg_array_size;
-
-    /*!
-     * \var struct background_exit_status exit_statuses[BG_MAX_SIZE]
-     * \brief Array of
-     */
-    volatile struct background_exit_status exit_statuses[BG_MAX_SIZE];
-
-    volatile size_t exit_statuses_size;
+    volatile struct background_exit_status exit_statuses[BG_MAX_SIZE]; /*! Array of exit statuses for background processes. */
+    volatile size_t exit_statuses_size; /*! Size of the array of exit statuses for background processes. */
 };
 
 /*!
