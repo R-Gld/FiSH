@@ -12,13 +12,13 @@ The aim of the project is to create a simple shell that allows executing command
 ## Installation
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y git gcc make doxygen
-git clone https://github.com/R-Gld/FiSH.git
+sudo apt-get update # Update the package list
+sudo apt-get install -y git gcc make doxygen # Install the dependencies (doxygen is optional and used only if you want to generate the documentation)
+git clone https://github.com/R-Gld/FiSH.git # Clone the repository
 cd FiSH
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/execs/
-make clean
-make install
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/execs # Make temporary library available
+sudo ln -s "$(pwd)/execs/libcmdline.so" /usr/local/lib/libcmdline.so # Or add the library to the system to make it permanent
+make clean install # Compile the project
 ```
 
 If you want to generate the documentation, you can run `make full-docs` after installing the dependencies.
