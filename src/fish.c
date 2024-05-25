@@ -1,4 +1,4 @@
-/**
+/*!
  * \file fish.c
  * \brief Main file of the FiSH shell.
  * \author Romain GALLAND / Eric MERLET
@@ -19,7 +19,7 @@
 #define _DEFAULT_SOURCE
 
 /*!
- * \def _DEFAULT_GNU
+ * \def _GNU_SOURCE
  * \brief Define to enable the use of some GNU extensions.
  *
  * Used for the function asprintf.
@@ -60,7 +60,7 @@ volatile pid_t bg_array[BG_MAX_SIZE];
 volatile size_t bg_array_size = 0;
 
 
-/**
+/*!
  * \fn int main()
  * \brief Main function of the FiSH shell.
  * This function is the main loop of the shell. It reads the command line entered by the user,
@@ -183,7 +183,7 @@ int main() {
 }
 
 
-/**
+/*!
  * \fn void execute_command_with_args(char *cmd, char *args[], struct sigaction *standardSigintAction, struct line *line)
  * \brief Execute a command with its arguments.
  *
@@ -310,7 +310,7 @@ pid_t execute_command_with_args(
 }
 
 
-/**
+/*!
  * \fn bool manage_intern_cmd(char *cmd, char *args[], struct line *li)
  * \brief Manage the internal commands of the shell.
  *
@@ -358,7 +358,7 @@ bool manage_intern_cmd(char *cmd, char *args[], struct line *li) {
     return false;
 }
 
-/**
+/*!
  * \fn void cd(char *path)
  * \brief Change the current working directory.
  * Can handle '~' as a shortcut for the HOME directory.
@@ -419,7 +419,7 @@ void cd(char *path) {
     if(malloced) free(resolvedPath);
 }
 
-/**
+/*!
  * \fn void sigchld_handler(int signum)
  * \brief Handler for the SIGCHLD signal.
  * This handler is called when a child process terminates.
@@ -455,7 +455,7 @@ void sigchld_handler(int signum) {
     }
 }
 
-/**
+/*!
  * \fn void manage_sigaction()
  * \brief Manage the signal actions.
  *
@@ -481,7 +481,7 @@ struct standard_signals manage_sigaction() {
     return sigs;
 }
 
-/**
+/*!
  * \fn void apply_ignore(int signal, struct sigaction *old_sigaction)
  * \brief Apply the ignore action for a signal.
  *

@@ -1,11 +1,12 @@
-/**
+/*!
  * \file utils.c
  * \brief Implementation of utility functions.
  * \author Romain GALLAND
  * \version 1
  */
-/**
- * \def _DEFAULT_GNU
+
+/*!
+ * \def _GNU_SOURCE
  * \brief Define to enable the use of some GNU extensions.
  *
  * Used for the function asprintf.

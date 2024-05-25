@@ -11,7 +11,7 @@
 #define NC   "\x1b[0m"
 
 
-/**
+/*!
  * Test a command line "str"
  * 
  * This function is static : it means that it is a local function, accessible only in this source file.

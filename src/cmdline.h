@@ -1,4 +1,4 @@
-/**
+/*!
  * \file cmdline.h
  * \brief Header file for the command line parser.
  * \author Eric MERLET / Romain GALLAND
@@ -12,19 +12,19 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-/**
+/*!
  * \def MAX_ARGS
  * \brief The maximum of arguments for a single command.
  */
 #define MAX_ARGS 16
 
-/**
+/*!
  * \def MAX_CMDS
  * \brief The maximum of commands for a single command line.
  */
 #define MAX_CMDS 16
 
-/**
+/*!
  * \struct cmd
  * \brief Structure representing a single command with its arguments.
  *
@@ -37,7 +37,7 @@ struct cmd {
 };
 
 
-/**
+/*!
  * \struct line
  * \brief Structure representing a command line with multiple commands and redirections.
  *
@@ -55,7 +55,7 @@ struct line {
   bool background;            /*!< Flag indicating background execution. */
 };
 
-/**
+/*!
  * \fn static bool valid_cmdarg_filename(const char *word)
  * \brief Init the struct line given in parameter
  * All the bits of the structure are set to 0
@@ -65,7 +65,7 @@ struct line {
 void line_init(struct line *li);
 
 
-/**
+/*!
  * \fn int line_parse(struct line *li, const char *str)
  * \brief Parses the given string "str" and constructs the command line structure pointed to by "li".
  *
@@ -88,7 +88,7 @@ void line_init(struct line *li);
  */
 int line_parse(struct line *li, const char *str);
 
-/**
+/*!
  * Reset a struct line
  * 
  * Free dynamically allocated memory

@@ -1,4 +1,4 @@
-/**
+/*!
  * @file fish.h
  * @brief Header file for the fish program.
  * @author Romain GALLAND
@@ -88,6 +88,11 @@ void sigchld_handler(int signum);
 struct standard_signals manage_sigaction();
 void apply_ignore(int signal, struct sigaction *old_sigaction);
 
+/*!
+ * \struct standard_signals
+ * \brief Structure holding the standard signal actions.
+ * This structure holds the standard signal actions for the signals SIGINT and SIGCHLD.
+ */
 struct standard_signals {
     struct sigaction sigint;
     struct sigaction sigchld;

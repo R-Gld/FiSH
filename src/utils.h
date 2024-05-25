@@ -1,4 +1,4 @@
-/**
+/*!
  * \file utils.h
  * \brief Header file for utility functions.
  * \author Romain GALLAND
@@ -11,12 +11,12 @@
 #include <sys/types.h>
 #include "cmdline.h"
 
-/**
+/*!
  * \def PREAD
  * \brief Index of the read end of the pipe.
  */
 #define PREAD 0
-/**
+/*!
  * \def PWRITE
  * \brief Index of the write end of the pipe.
  */
@@ -36,7 +36,7 @@
 #define BG_MAX_SIZE 1024
 
 
-/**
+/*!
  * \struct pipe_control
  * \brief Structure helping manage pipes.
  */
@@ -45,19 +45,19 @@ struct pipe_control {
     int pipe_next[2]; /*!< File descriptors for the next pipe. */
 };
 
-/**
+/*!
  * \fn void init_pipe_control(struct pipe_control *pc)
  * \param pc The pipe_control structure to initialize.
  */
 void init_pipe_control(struct pipe_control *pc);
 
-/**
+/*!
  * \fn void close_pipe(int pipe[2])
  * \param pipe The pipe to close.
  */
 void close_pipe(int pipe[2]);
 
-/**
+/*!
  * \fn void manage_file_input(char *file_input)
  * \brief Redirects the input of the program to the file given as argument.
  *
@@ -65,7 +65,7 @@ void close_pipe(int pipe[2]);
  */
 void manage_file_input(char *file_input);
 
-/**
+/*!
  * \fn void manage_file_output(char *file_output, bool file_output_append)
  * \brief Redirects the output of the program to the file given as argument.
  *
@@ -74,7 +74,7 @@ void manage_file_input(char *file_input);
  */
 void manage_file_output(char *file_output, bool file_output_append);
 
-/**
+/*!
  * \fn void print_debug_line(struct line *li)
  * \brief Print the content of a line structure for debug purposes.
  *
@@ -94,7 +94,7 @@ void manage_file_output(char *file_output, bool file_output_append);
  */
 void print_debug_line(struct line *li);
 
-/**
+/*!
  * \fn void substitute_home(char *path, char *home)
  * \brief Replace the home directory in the path by '~'.
  *
@@ -103,7 +103,7 @@ void print_debug_line(struct line *li);
  */
 void substitute_home(char *path, char *home);
 
-/**
+/*!
  * \fn void init_bg_array(pid_t *bg_array)
  * \brief Initialize the array of background processes.
  * \param bg_array The array to initialize.

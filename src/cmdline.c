@@ -1,4 +1,4 @@
-/**
+/*!
  * \file cmdline.c
  * \brief Source file for the command line parser.
  * \author Eric MERLET / Romain GALLAND
@@ -22,7 +22,7 @@ void line_init(struct line *li) {
 }
 
 
-/**
+/*!
  * \fn static bool valid_cmdarg_filename(const char *word)
  * \brief Test the validity of command arguments or file names used in redirections
  * This function is static : it means that it is a local function, accessible only in this source file
@@ -43,7 +43,7 @@ static bool valid_cmdarg_filename(const char *word){
    return true;
 }
 
-/**
+/*!
  * \fn static void parse_error(const char *format, ...)
  * \brief Print the string "Error while parsing: ", followed by the string "format" to stderr
  * 
@@ -64,7 +64,7 @@ static void parse_error(const char *format, ...) {
   va_end(ap);
 }
 
-/**
+/*!
  * \fn static int line_next_word(const char *str, size_t *index, char **pword)
  * \brief Search a new word in the string "str" from the "index" position
  * 
