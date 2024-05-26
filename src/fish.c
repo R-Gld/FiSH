@@ -9,6 +9,7 @@
  *
  * The version 1 of this file was provided in the instructions.
  *
+ * Everything asked is implemented.
  */
 
 /*!
