@@ -21,17 +21,13 @@ OBJECTS  := $(OBJ_DIR)/cmdline.o $(OBJ_DIR)/fish.o $(OBJ_DIR)/cmdline_test.o $(O
 ifeq ($(UNAME_S),Darwin) # macOS
 	SO_EXT       := dylib
 	SHARED_FLAG  := -dynamiclib
-	# RPATH pour que les binaires trouvent la lib dans le même dossier
 	RPATH_FLAG   := -Wl,-rpath,@executable_path
-	# id de la lib : @rpath/libcmdline.dylib (bon compromis si un jour tu installes ailleurs)
 	LIB_ID_FLAG  := -Wl,-install_name,@rpath/libcmdline.$(SO_EXT)
-	# Sur mac, clang est par défaut ; si tu préfères gcc via Homebrew, exporte CC=gcc-14, etc.
-else # Linux et autres Unix ELF
+else # Linux
 	SO_EXT       := so
 	SHARED_FLAG  := -shared
 	RPATH_FLAG   := -Wl,-rpath,'$$ORIGIN'
 	LIB_ID_FLAG  :=
-	# Sur Linux, tu utilises peut-être gcc
 	CC          ?= gcc
 endif
 
@@ -89,19 +85,15 @@ open-pdf: docs-pdf
 check-doxygen:
 	@command -v doxygen >/dev/null 2>&1 || (echo "Doxygen not found. Install it (e.g. 'brew install doxygen' on macOS)." && exit 1)
 
-# Installation globale (optionnelle)
 permanent-install: install
 	@echo "Installing fish to $(PERMANENT_FISH_EXEC) and lib to $(PERMANENT_LIB_CMDLINE)"
 	sudo rm -f $(PERMANENT_FISH_EXEC) $(PERMANENT_LIB_CMDLINE)
 	sudo cp $(EXEC_DIR)/fish $(PERMANENT_FISH_EXEC)
 	sudo cp $(EXEC_DIR)/libcmdline.$(SO_EXT) $(PERMANENT_LIB_CMDLINE)
 ifeq ($(UNAME_S),Darwin)
-	# Ajuster l'install_name pour pointer sur /usr/local/lib si tu installes globalement
 	sudo install_name_tool -id $(PERMANENT_LIB_CMDLINE) $(PERMANENT_LIB_CMDLINE)
-	# Et faire pointer fish vers cette lib
 	sudo install_name_tool -change @rpath/libcmdline.$(SO_EXT) $(PERMANENT_LIB_CMDLINE) $(PERMANENT_FISH_EXEC)
 else
-	# Linux : mettre à jour le cache des libs si besoin
 	@sudo ldconfig || true
 endif
 	@echo "\n\033[1;34mFish installed successfully! Try 'fish'.\033[0m"
